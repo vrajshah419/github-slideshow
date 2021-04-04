@@ -1,0 +1,56 @@
+HEAT CONDUCTION CFD - NUMERICAL & ANALYTICAL SOLUTIONS IN PYTHON
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Thermal conductivity k, Perimeter of rod P, Convective heat transfer coefficient h are all constant
+
+n_squared=25
+n=5
+TA=293
+TB=373
+L=1 # New length, changed dx below to make sure i max = 5 cells
+
+# Change analytic equations
+
+x_analytic = np.linspace(0,1,11)
+t_analytic = ((TB - TA) * ((np.cosh(n*(L-x_analytic))) / (np.cosh(n*L))) + TA)
+
+dx=(1/10)
+imax=int(L/dx)
+x=np.zeros(imax)
+for i in range (imax):
+  x[i]=dx/2+i*dx # Boundaries should be dx/2 away from ends
+
+a=np.zeros((imax,imax))
+b=np.zeros(imax)
+
+a[0,0]=(-3-n_squared*dx**2)
+a[0,1]=1
+a[imax-1,imax-2]=1
+a[imax-1,imax-1]=-1-n_squared*dx**2
+
+b[0]=((-n_squared*TA*dx**2)-(2*TB))
+b[imax-1]=(-n_squared*TA*dx**2) 
+
+for i in range(1,imax-1):
+  a[i,i-1]=1
+  a[i,i]=(-2-n_squared*dx**2)
+  a[i,i+1]=1
+  b[i]=(-n_squared*TA*dx**2)
+
+tempr = np.linalg.solve(a,b)
+
+print(x,tempr)
+print(x_analytic,t_analytic)
+
+print([a])
+
+print([b])
+
+plt.plot(x_analytic, t_analytic, 'k', label='Analytic')
+plt.plot(x, tempr, 'ro', label='Numeric')
+legend = plt.legend(loc='lower right', shadow =True)
+plt.title('Numeric & Analytic Solutions for 15 cells')
+plt.xlabel('x(m)')
+plt.ylabel('Temp(c)')
